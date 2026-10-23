@@ -1,0 +1,37 @@
+### Create Store
+POST http://localhost:8080/api/v1/stores
+Content-Type: application/json
+
+{
+  "storeCode": "VAN-001",
+  "name": "SmartMart Fraser",
+  "city": "Vancouver",
+  "province": "BC",
+  "address": "123 Fraser Street"
+}
+
+### Get All Stores
+GET http://localhost:8080/api/v1/stores
+
+### Get Store By ID
+GET http://localhost:8080/api/v1/stores/1
+
+### Update Store
+PUT http://localhost:8080/api/v1/stores/1
+Content-Type: application/json
+
+{
+  "storeCode": "VAN-001",
+  "name": "SmartMart Fraser Updated",
+  "city": "Vancouver",
+  "province": "BC",
+  "address": "456 Fraser Street"
+}
+
+### Deactivate Store
+PATCH http://localhost:8080/api/v1/stores/1/status
+Content-Type: application/json
+
+{
+  "active": true
+}
