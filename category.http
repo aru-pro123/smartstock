@@ -1,0 +1,71 @@
+### Create Milk Category
+POST http://localhost:8080/api/v1/categories
+Content-Type: application/json
+
+{
+  "categoryCode": "MILK",
+  "name": "Milk",
+  "description": "Fresh dairy milk products"
+}
+
+### Create Fruits Category
+POST http://localhost:8080/api/v1/categories
+Content-Type: application/json
+
+{
+  "categoryCode": "FRUITS",
+  "name": "Fruits",
+  "description": "Fresh fruits and packaged fruit products"
+}
+
+### Create Bread Category
+POST http://localhost:8080/api/v1/categories
+Content-Type: application/json
+
+{
+  "categoryCode": "BREAD",
+  "name": "Bread",
+  "description": "Fresh and packaged bread"
+}
+
+### Get All Categories
+GET http://localhost:8080/api/v1/categories
+
+### Get Category By ID
+GET http://localhost:8080/api/v1/categories/1
+
+### Update Category
+PUT http://localhost:8080/api/v1/categories/1
+Content-Type: application/json
+
+{
+  "categoryCode": "MILK",
+  "name": "Milk & Cream",
+  "description": "Fresh milk, cream and related dairy products"
+}
+
+### Deactivate Category
+PATCH http://localhost:8080/api/v1/categories/1/status
+Content-Type: application/json
+
+{
+  "active": false
+}
+
+### Reactivate Category
+PATCH http://localhost:8080/api/v1/categories/1/status
+Content-Type: application/json
+
+{
+  "active": true
+}
+
+### Duplicate Category Test
+POST http://localhost:8080/api/v1/categories
+Content-Type: application/json
+
+{
+  "categoryCode": "MILK",
+  "name": "Duplicate Milk",
+  "description": "Testing duplicate prevention"
+}
