@@ -3,7 +3,7 @@ package com.arunya.smartstock.store.service;
 
 import com.arunya.smartstock.store.dto.*;
 import com.arunya.smartstock.store.entity.Store;
-import com.arunya.smartstock.store.respository.StoreRepository;
+import com.arunya.smartstock.store.repository.StoreRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
