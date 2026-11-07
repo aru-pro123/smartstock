@@ -4,7 +4,7 @@ import com.arunya.smartstock.department.dto.*;
 import com.arunya.smartstock.department.entity.Department;
 import com.arunya.smartstock.department.respository.DepartmentRepository;
 import com.arunya.smartstock.store.entity.Store;
-import com.arunya.smartstock.store.respository.StoreRepository;
+import com.arunya.smartstock.store.repository.StoreRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
