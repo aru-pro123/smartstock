@@ -1,0 +1,147 @@
+
+### 1. Register Gala Apples Inventory
+POST http://localhost:8080/api/v1/inventory
+Content-Type: application/json
+
+{
+  "storeId": 1,
+  "productId": 2,
+  "reorderLevel": 30,
+  "reorderQuantity": 100
+}
+
+
+### 2. Get Inventory by ID
+GET http://localhost:8080/api/v1/inventory/1
+
+
+### 3. Get Store Inventory
+GET http://localhost:8080/api/v1/inventory/store/1
+
+
+### 4. Check Low Stock
+GET http://localhost:8080/api/v1/inventory/store/1/low-stock
+
+
+### 5. Receive 120 Units
+PATCH http://localhost:8080/api/v1/inventory/1/quantity
+Content-Type: application/json
+
+{
+  "quantity": 120,
+  "type": "INCREASE"
+}
+
+
+### 6. Reserve 10 Units
+PATCH http://localhost:8080/api/v1/inventory/1/reservation
+Content-Type: application/json
+
+{
+  "quantity": 10,
+  "type": "RESERVE"
+}
+
+
+### 7. Decrease Stock by 20 Units
+PATCH http://localhost:8080/api/v1/inventory/1/quantity
+Content-Type: application/json
+
+{
+  "quantity": 20,
+  "type": "DECREASE"
+}
+
+
+### 8. Check Low Stock Again
+GET http://localhost:8080/api/v1/inventory/store/1/low-stock
+
+
+### 9. Update Reorder Settings
+PUT http://localhost:8080/api/v1/inventory/1
+Content-Type: application/json
+
+{
+  "reorderLevel": 50,
+  "reorderQuantity": 150
+}
+
+
+### 10. Release 5 Reserved Units
+PATCH http://localhost:8080/api/v1/inventory/1/reservation
+Content-Type: application/json
+
+{
+  "quantity": 5,
+  "type": "RELEASE"
+}
+
+
+### 11. Deactivate Inventory
+PATCH http://localhost:8080/api/v1/inventory/1/status
+Content-Type: application/json
+
+{
+  "active": false
+}
+
+
+### 12. Reactivate Inventory
+PATCH http://localhost:8080/api/v1/inventory/1/status
+Content-Type: application/json
+
+{
+  "active": true
+}
+
+
+### 13. Insufficient Stock Test (400)
+PATCH http://localhost:8080/api/v1/inventory/1/quantity
+Content-Type: application/json
+
+{
+  "quantity": 500,
+  "type": "DECREASE"
+}
+
+
+### 14. Excessive Reservation Test (400)
+PATCH http://localhost:8080/api/v1/inventory/1/reservation
+Content-Type: application/json
+
+{
+  "quantity": 500,
+  "type": "RESERVE"
+}
+
+
+### 15. Duplicate Inventory Test (409)
+POST http://localhost:8080/api/v1/inventory
+Content-Type: application/json
+
+{
+  "storeId": 1,
+  "productId": 2,
+  "reorderLevel": 30,
+  "reorderQuantity": 100
+}
+
+
+### 16. Inactive Product Test (400)
+POST http://localhost:8080/api/v1/inventory
+Content-Type: application/json
+
+{
+  "storeId": 1,
+  "productId": 1,
+  "reorderLevel": 30,
+  "reorderQuantity": 100
+}
+
+
+### 17. Inventory Not Found Test (404)
+GET http://localhost:8080/api/v1/inventory/999999
+
+
+### 18. Final Inventory Verification
+GET http://localhost:8080/api/v1/inventory/1
