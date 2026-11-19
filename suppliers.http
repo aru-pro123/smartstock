@@ -1,0 +1,90 @@
+@baseUrl = http://localhost:8080/api
+
+### Create supplier - Dairy
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "name": "Pacific Dairy Distributors",
+  "contactPerson": "John Smith",
+  "email": "john@example.com",
+  "phone": "604-555-0101",
+  "address": "Vancouver, BC, Canada"
+}
+
+> {%
+    client.test("Supplier created", function() {
+        client.assert(response.status === 201);
+    });
+    client.global.set("supplierId", response.body.id);
+%}
+
+### Create supplier - Produce
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "name": "Fresh Valley Produce",
+  "contactPerson": "Sarah Wilson",
+  "email": "sarah@example.com",
+  "phone": "604-555-0102",
+  "address": "Surrey, BC, Canada"
+}
+
+### Get all suppliers
+GET {{baseUrl}}/suppliers
+
+### Get active suppliers
+GET {{baseUrl}}/suppliers?activeOnly=true
+
+### Get supplier by ID
+GET {{baseUrl}}/suppliers/{{supplierId}}
+
+### Update supplier
+PUT {{baseUrl}}/suppliers/{{supplierId}}
+Content-Type: application/json
+
+{
+  "name": "Pacific Dairy Distributors",
+  "contactPerson": "David Smith",
+  "email": "david@example.com",
+  "phone": "604-555-0103",
+  "address": "Burnaby, BC, Canada"
+}
+
+### Deactivate supplier
+PATCH {{baseUrl}}/suppliers/{{supplierId}}/deactivate
+
+### Verify active suppliers after deactivation
+GET {{baseUrl}}/suppliers?activeOnly=true
+
+### Reactivate supplier
+PATCH {{baseUrl}}/suppliers/{{supplierId}}/activate
+
+### Duplicate supplier - Expected 409
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "name": "Pacific Dairy Distributors"
+}
+
+### Invalid supplier name - Expected 400
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+### Invalid email - Expected 400
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "name": "Test Supplier",
+  "email": "invalid-email"
+}
+
+### Supplier not found - Expected 404
+GET {{baseUrl}}/suppliers/999999
