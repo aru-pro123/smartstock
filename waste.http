@@ -1,0 +1,212 @@
+
+### 1. Check Current Inventory
+GET http://localhost:8080/api/v1/inventory/1
+
+
+### 2. Check Current Batches
+GET http://localhost:8080/api/v1/batches/inventory/1
+
+
+### 3. Record Damaged Stock
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 3,
+  "wasteReason": "DAMAGED",
+  "quantity": 5,
+  "unitCost": 0.80,
+  "notes": "Apples damaged during shelf stocking"
+}
+
+
+### 4. Record Spoiled Stock
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 4,
+  "wasteReason": "SPOILAGE",
+  "quantity": 8,
+  "unitCost": 0.80,
+  "notes": "Rotten apples identified during inspection"
+}
+
+
+### 5. Record Quality Issues
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 4,
+  "wasteReason": "QUALITY_ISSUE",
+  "quantity": 3,
+  "unitCost": 0.80,
+  "notes": "Products failed quality inspection"
+}
+
+
+### 6. Record Other Waste
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 3,
+  "wasteReason": "OTHER",
+  "quantity": 2,
+  "unitCost": 0.80,
+  "notes": "Products discarded after falling on the floor"
+}
+
+
+### 7. Get Waste Record
+GET http://localhost:8080/api/v1/waste/1
+
+
+### 8. Get Store Waste History
+GET http://localhost:8080/api/v1/waste/store/1
+
+
+### 9. Get Inventory Waste History
+GET http://localhost:8080/api/v1/waste/inventory/1
+
+
+### 10. Get Batch Waste History
+GET http://localhost:8080/api/v1/waste/batch/3
+
+
+### 11. Get Store Waste Summary
+GET http://localhost:8080/api/v1/waste/store/1/summary
+
+
+### 12. Verify Inventory Quantity
+GET http://localhost:8080/api/v1/inventory/1
+
+
+### 13. Verify Batch Quantities
+GET http://localhost:8080/api/v1/batches/inventory/1
+
+
+### 14. Verify Stock Movement History
+GET http://localhost:8080/api/v1/stock-movements/inventory/1
+
+
+### 15. Verify Batch Movement History
+GET http://localhost:8080/api/v1/batches/3/movements
+
+
+### ============================================
+### NEGATIVE TEST CASES
+### ============================================
+
+### 16. Unknown Batch - Expect 404
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 999999,
+  "wasteReason": "DAMAGED",
+  "quantity": 5,
+  "unitCost": 0.80
+}
+
+
+### 17. Insufficient Batch Quantity - Expect 400
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 3,
+  "wasteReason": "DAMAGED",
+  "quantity": 999999,
+  "unitCost": 0.80
+}
+
+
+### 18. Zero Quantity - Expect 400
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 3,
+  "wasteReason": "DAMAGED",
+  "quantity": 0,
+  "unitCost": 0.80
+}
+
+
+### 19. Negative Unit Cost - Expect 400
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 3,
+  "wasteReason": "DAMAGED",
+  "quantity": 1,
+  "unitCost": -0.80
+}
+
+
+### 20. OTHER Without Notes - Expect 400
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 3,
+  "wasteReason": "OTHER",
+  "quantity": 1,
+  "unitCost": 0.80
+}
+
+
+### 21. Non-expired Batch - Expect 400
+### Valid while Batch 4 has not expired
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 4,
+  "wasteReason": "EXPIRED",
+  "quantity": 1,
+  "unitCost": 0.80
+}
+
+
+### 22. Unknown Waste Reason - Expect 400
+POST http://localhost:8080/api/v1/waste
+Content-Type: application/json
+
+{
+  "batchId": 3,
+  "wasteReason": "INVALID_REASON",
+  "quantity": 1,
+  "unitCost": 0.80
+}
+
+
+### 23. Unknown Waste Record - Expect 404
+GET http://localhost:8080/api/v1/waste/999999
+
+
+### 24. Unknown Store - Expect 404
+GET http://localhost:8080/api/v1/waste/store/999999
+
+
+### 25. Unknown Inventory - Expect 404
+GET http://localhost:8080/api/v1/waste/inventory/999999
+
+
+### 26. Unknown Batch History - Expect 404
+GET http://localhost:8080/api/v1/waste/batch/999999
+
+
+### 27. Unknown Store Summary - Expect 404
+GET http://localhost:8080/api/v1/waste/store/999999/summary
+
+
+### 28. Final Waste Summary
+GET http://localhost:8080/api/v1/waste/store/1/summary
+
+
+### 29. Final Inventory Verification
+GET http://localhost:8080/api/v1/inventory/1
