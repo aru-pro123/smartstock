@@ -1,0 +1,132 @@
+
+### 1. Get Current Inventory
+GET http://localhost:8080/api/v1/inventory/1
+
+
+### 2. Receive 100 Units
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "RECEIVE",
+  "quantity": 100,
+  "referenceNumber": "PO-1001",
+  "reason": "Supplier delivery"
+}
+
+
+### 3. Record Sale of 20 Units
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "SALE",
+  "quantity": 20,
+  "referenceNumber": "SALE-1001",
+  "reason": "Customer purchases"
+}
+
+
+### 4. Record 3 Damaged Units
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "DAMAGE",
+  "quantity": 3,
+  "referenceNumber": "DMG-1001",
+  "reason": "Damaged during handling"
+}
+
+
+### 5. Customer Returns 5 Units
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "RETURN",
+  "quantity": 5,
+  "referenceNumber": "RET-1001",
+  "reason": "Customer return, item resellable"
+}
+
+
+### 6. Positive Stock Adjustment
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "ADJUSTMENT",
+  "quantity": 10,
+  "referenceNumber": "ADJ-1001",
+  "reason": "Physical stock count correction"
+}
+
+
+### 7. Negative Stock Adjustment
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "ADJUSTMENT",
+  "quantity": -2,
+  "referenceNumber": "ADJ-1002",
+  "reason": "Physical stock count correction"
+}
+
+
+### 8. Get Stock Movement History
+GET http://localhost:8080/api/v1/stock-movements/inventory/1
+
+
+### 9. Get Movement by ID
+GET http://localhost:8080/api/v1/stock-movements/1
+
+
+### 10. Verify Updated Inventory
+GET http://localhost:8080/api/v1/inventory/1
+
+
+### 11. Invalid Quantity Test - Expect 400
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "RECEIVE",
+  "quantity": -10,
+  "referenceNumber": "INVALID-1001",
+  "reason": "Negative receiving test"
+}
+
+
+### 12. Insufficient Stock Test - Expect 400
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "SALE",
+  "quantity": 999999,
+  "referenceNumber": "INVALID-1002",
+  "reason": "Insufficient stock test"
+}
+
+
+### 13. Unknown Inventory - Expect 404
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 999999,
+  "movementType": "RECEIVE",
+  "quantity": 10,
+  "referenceNumber": "INVALID-1003",
+  "reason": "Unknown inventory test"
+}

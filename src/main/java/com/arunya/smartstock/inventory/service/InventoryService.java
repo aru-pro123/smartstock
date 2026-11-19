@@ -139,37 +139,37 @@ public class InventoryService {
                 inventoryRepository.saveAndFlush(inventory));
     }
 
-    @Transactional
-    public InventoryResponse adjustQuantity(
-            Long id, InventoryQuantityRequest request) {
-
-        StoreInventory inventory = getLocked(id);
-        validateActive(inventory);
-
-        BigDecimal current = inventory.getQuantityOnHand();
-
-        BigDecimal updated = switch (request.type()) {
-            case INCREASE -> current.add(request.quantity());
-            case DECREASE -> current.subtract(request.quantity());
-        };
-
-        if (updated.signum() < 0) {
-            throw error(HttpStatus.BAD_REQUEST,
-                    "Insufficient physical stock");
-        }
-
-        if (updated.compareTo(inventory.getQuantityReserved()) < 0) {
-            throw error(HttpStatus.BAD_REQUEST,
-                    "Cannot reduce stock below reserved quantity");
-        }
-
-        validatePrecision(updated);
-
-        inventory.setQuantityOnHand(updated);
-
-        return InventoryResponse.from(
-                inventoryRepository.saveAndFlush(inventory));
-    }
+//    @Transactional
+//    public InventoryResponse adjustQuantity(
+//            Long id, InventoryQuantityRequest request) {
+//
+//        StoreInventory inventory = getLocked(id);
+//        validateActive(inventory);
+//
+//        BigDecimal current = inventory.getQuantityOnHand();
+//
+//        BigDecimal updated = switch (request.type()) {
+//            case INCREASE -> current.add(request.quantity());
+//            case DECREASE -> current.subtract(request.quantity());
+//        };
+//
+//        if (updated.signum() < 0) {
+//            throw error(HttpStatus.BAD_REQUEST,
+//                    "Insufficient physical stock");
+//        }
+//
+//        if (updated.compareTo(inventory.getQuantityReserved()) < 0) {
+//            throw error(HttpStatus.BAD_REQUEST,
+//                    "Cannot reduce stock below reserved quantity");
+//        }
+//
+//        validatePrecision(updated);
+//
+//        inventory.setQuantityOnHand(updated);
+//
+//        return InventoryResponse.from(
+//                inventoryRepository.saveAndFlush(inventory));
+//    }
 
     @Transactional
     public InventoryResponse adjustReservation(

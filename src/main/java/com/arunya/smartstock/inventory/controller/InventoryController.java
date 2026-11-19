@@ -62,12 +62,12 @@ public class InventoryController {
         return service.updateStatus(id, request);
     }
 
-    @PatchMapping("/{id}/quantity")
-    public InventoryResponse adjustQuantity(
-            @PathVariable Long id,
-            @Valid @RequestBody InventoryQuantityRequest request) {
-        return service.adjustQuantity(id, request);
-    }
+//    @PatchMapping("/{id}/quantity")
+//    public InventoryResponse adjustQuantity(
+//            @PathVariable Long id,
+//            @Valid @RequestBody InventoryQuantityRequest request) {
+//        return service.adjustQuantity(id, request);
+//    }
 
     @PatchMapping("/{id}/reservation")
     public InventoryResponse adjustReservation(
