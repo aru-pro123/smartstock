@@ -1,0 +1,263 @@
+
+### 1. Get Current Inventory
+GET http://localhost:8080/api/v1/inventory/1
+
+
+### 2. Get Existing Batches
+GET http://localhost:8080/api/v1/batches/inventory/1
+
+
+### 3. Receive Batch A - Expiring Soon
+POST http://localhost:8080/api/v1/batches/receive
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "batchNumber": "APPLE-2026-001",
+  "quantity": 30,
+  "manufacturedDate": "2026-11-15",
+  "expiryDate": "2026-11-23",
+  "referenceNumber": "PO-2001",
+  "reason": "Gala apples delivery batch A"
+}
+
+
+### 4. Receive Batch B
+POST http://localhost:8080/api/v1/batches/receive
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "batchNumber": "APPLE-2026-002",
+  "quantity": 50,
+  "manufacturedDate": "2026-11-16",
+  "expiryDate": "2026-11-28",
+  "referenceNumber": "PO-2002",
+  "reason": "Gala apples delivery batch B"
+}
+
+
+### 5. Receive Batch C
+POST http://localhost:8080/api/v1/batches/receive
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "batchNumber": "APPLE-2026-003",
+  "quantity": 70,
+  "manufacturedDate": "2026-11-17",
+  "expiryDate": "2026-12-05",
+  "referenceNumber": "PO-2003",
+  "reason": "Gala apples delivery batch C"
+}
+
+
+### 6. Get All Inventory Batches
+GET http://localhost:8080/api/v1/batches/inventory/1
+
+
+### 7. Get Batch Details
+GET http://localhost:8080/api/v1/batches/1
+
+
+### 8. Get Expiring Soon - Default 7 Days
+GET http://localhost:8080/api/v1/batches/store/1/expiring-soon
+
+
+### 9. Get Expiring Within 30 Days
+GET http://localhost:8080/api/v1/batches/store/1/expiring-soon?days=30
+
+
+### 10. Get Expired Batches
+GET http://localhost:8080/api/v1/batches/store/1/expired
+
+
+### 11. Sale - FEFO Allocation
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "SALE",
+  "quantity": 40,
+  "referenceNumber": "SALE-2001",
+  "reason": "FEFO allocation testing"
+}
+
+
+### 12. Verify Batch Quantities After Sale
+GET http://localhost:8080/api/v1/batches/inventory/1
+
+
+### 13. Record Damaged Apples From Batch B
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "DAMAGE",
+  "quantity": 5,
+  "batchNumber": "APPLE-2026-002",
+  "referenceNumber": "DMG-2001",
+  "reason": "Damaged during shelf stocking"
+}
+
+
+### 14. Return Resellable Stock
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "RETURN",
+  "quantity": 3,
+  "batchNumber": "APPLE-RETURN-001",
+  "expiryDate": "2026-11-28",
+  "referenceNumber": "RET-2001",
+  "reason": "Inspected resellable customer return"
+}
+
+
+### 15. Positive Stock Adjustment
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "ADJUSTMENT",
+  "quantity": 4,
+  "batchNumber": "APPLE-ADJUSTMENT-001",
+  "expiryDate": "2026-12-05",
+  "referenceNumber": "ADJ-2001",
+  "reason": "Additional stock discovered during counting"
+}
+
+
+### 16. Negative Stock Adjustment
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "ADJUSTMENT",
+  "quantity": -2,
+  "batchNumber": "APPLE-2026-003",
+  "referenceNumber": "ADJ-2002",
+  "reason": "Physical stock count correction"
+}
+
+
+### 17. Get Batch Movement History
+GET http://localhost:8080/api/v1/batches/1/movements
+
+
+### 18. Get Stock Movement History
+GET http://localhost:8080/api/v1/stock-movements/inventory/1
+
+
+### 19. Verify Aggregate Inventory
+GET http://localhost:8080/api/v1/inventory/1
+
+
+### 20. Verify All Batches
+GET http://localhost:8080/api/v1/batches/inventory/1
+
+
+### ============================================
+### NEGATIVE TEST CASES
+### ============================================
+
+### 21. Duplicate Batch - Expect 409
+POST http://localhost:8080/api/v1/batches/receive
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "batchNumber": "APPLE-2026-001",
+  "quantity": 30,
+  "expiryDate": "2026-11-23"
+}
+
+
+### 22. Receive Expired Batch - Expect 400
+POST http://localhost:8080/api/v1/batches/receive
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "batchNumber": "APPLE-EXPIRED-001",
+  "quantity": 20,
+  "expiryDate": "2026-10-01"
+}
+
+
+### 23. Invalid Batch Dates - Expect 400
+POST http://localhost:8080/api/v1/batches/receive
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "batchNumber": "APPLE-INVALID-DATE",
+  "quantity": 20,
+  "manufacturedDate": "2026-11-17",
+  "expiryDate": "2026-11-16"
+}
+
+
+### 24. Insufficient Stock - Expect 400
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "SALE",
+  "quantity": 999999,
+  "reason": "Insufficient stock testing"
+}
+
+
+### 25. Damage Without Batch Number - Expect 400
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "DAMAGE",
+  "quantity": 5,
+  "reason": "Missing batch number testing"
+}
+
+
+### 26. Unknown Batch Number - Expect 404
+POST http://localhost:8080/api/v1/stock-movements
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "movementType": "DAMAGE",
+  "quantity": 1,
+  "batchNumber": "UNKNOWN-BATCH"
+}
+
+
+### 27. Invalid Quantity - Expect 400
+POST http://localhost:8080/api/v1/batches/receive
+Content-Type: application/json
+
+{
+  "inventoryId": 1,
+  "batchNumber": "APPLE-INVALID-QTY",
+  "quantity": 0
+}
+
+
+### 28. Unknown Batch ID - Expect 404
+GET http://localhost:8080/api/v1/batches/999999
+
+
+### 29. Unknown Inventory - Expect 404
+GET http://localhost:8080/api/v1/batches/inventory/999999
+
+
+### 30. Final Inventory Verification
+GET http://localhost:8080/api/v1/inventory/1

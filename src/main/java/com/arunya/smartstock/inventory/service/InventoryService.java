@@ -1,5 +1,7 @@
+
 package com.arunya.smartstock.inventory.service;
 
+import com.arunya.smartstock.batch.repository.InventoryBatchRepository;
 import com.arunya.smartstock.inventory.dto.*;
 import com.arunya.smartstock.inventory.entity.StoreInventory;
 import com.arunya.smartstock.inventory.repository.InventoryRepository;
@@ -14,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -22,15 +26,18 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
     private final StoreRepository storeRepository;
     private final ProductRepository productRepository;
+    private final InventoryBatchRepository batchRepository;
 
     public InventoryService(
             InventoryRepository inventoryRepository,
             StoreRepository storeRepository,
-            ProductRepository productRepository
+            ProductRepository productRepository,
+            InventoryBatchRepository batchRepository
     ) {
         this.inventoryRepository = inventoryRepository;
         this.storeRepository = storeRepository;
         this.productRepository = productRepository;
+        this.batchRepository = batchRepository;
     }
 
     @Transactional
@@ -77,6 +84,7 @@ public class InventoryService {
 
     @Transactional(readOnly = true)
     public InventoryResponse findById(Long id) {
+
         return InventoryResponse.from(
                 inventoryRepository.findById(id)
                         .orElseThrow(() -> error(
@@ -88,7 +96,8 @@ public class InventoryService {
     public List<InventoryResponse> findByStore(Long storeId) {
 
         if (!storeRepository.existsById(storeId)) {
-            throw error(HttpStatus.NOT_FOUND, "Store not found");
+            throw error(HttpStatus.NOT_FOUND,
+                    "Store not found");
         }
 
         return inventoryRepository.findByStoreId(storeId)
@@ -101,7 +110,8 @@ public class InventoryService {
     public List<InventoryResponse> findLowStock(Long storeId) {
 
         if (!storeRepository.existsById(storeId)) {
-            throw error(HttpStatus.NOT_FOUND, "Store not found");
+            throw error(HttpStatus.NOT_FOUND,
+                    "Store not found");
         }
 
         return inventoryRepository.findLowStock(storeId)
@@ -112,7 +122,9 @@ public class InventoryService {
 
     @Transactional
     public InventoryResponse updateSettings(
-            Long id, InventorySettingsRequest request) {
+            Long id,
+            InventorySettingsRequest request
+    ) {
 
         StoreInventory inventory = getLocked(id);
 
@@ -125,7 +137,9 @@ public class InventoryService {
 
     @Transactional
     public InventoryResponse updateStatus(
-            Long id, InventoryStatusRequest request) {
+            Long id,
+            InventoryStatusRequest request
+    ) {
 
         StoreInventory inventory = getLocked(id);
 
@@ -139,60 +153,71 @@ public class InventoryService {
                 inventoryRepository.saveAndFlush(inventory));
     }
 
-//    @Transactional
-//    public InventoryResponse adjustQuantity(
-//            Long id, InventoryQuantityRequest request) {
-//
-//        StoreInventory inventory = getLocked(id);
-//        validateActive(inventory);
-//
-//        BigDecimal current = inventory.getQuantityOnHand();
-//
-//        BigDecimal updated = switch (request.type()) {
-//            case INCREASE -> current.add(request.quantity());
-//            case DECREASE -> current.subtract(request.quantity());
-//        };
-//
-//        if (updated.signum() < 0) {
-//            throw error(HttpStatus.BAD_REQUEST,
-//                    "Insufficient physical stock");
-//        }
-//
-//        if (updated.compareTo(inventory.getQuantityReserved()) < 0) {
-//            throw error(HttpStatus.BAD_REQUEST,
-//                    "Cannot reduce stock below reserved quantity");
-//        }
-//
-//        validatePrecision(updated);
-//
-//        inventory.setQuantityOnHand(updated);
-//
-//        return InventoryResponse.from(
-//                inventoryRepository.saveAndFlush(inventory));
-//    }
-
     @Transactional
     public InventoryResponse adjustReservation(
-            Long id, InventoryReservationRequest request) {
+            Long id,
+            InventoryReservationRequest request
+    ) {
 
         StoreInventory inventory = getLocked(id);
-        validateActive(inventory);
+
+        if (request.type() == null) {
+            throw error(HttpStatus.BAD_REQUEST,
+                    "Reservation type is required");
+        }
+
+        if (request.quantity() == null
+                || request.quantity().signum() <= 0) {
+            throw error(HttpStatus.BAD_REQUEST,
+                    "Reservation quantity must be positive");
+        }
+
+        validatePrecision(request.quantity());
 
         BigDecimal current = inventory.getQuantityReserved();
+        BigDecimal updated;
 
-        BigDecimal updated = switch (request.type()) {
-            case RESERVE -> current.add(request.quantity());
-            case RELEASE -> current.subtract(request.quantity());
-        };
+        switch (request.type()) {
 
-        if (updated.signum() < 0) {
-            throw error(HttpStatus.BAD_REQUEST,
-                    "Cannot release more than reserved quantity");
+            case RESERVE -> {
+
+                validateActive(inventory);
+
+                updated = current.add(request.quantity());
+
+                LocalDate today = LocalDate.now(
+                        ZoneId.of("America/Vancouver"));
+
+                BigDecimal sellableQuantity =
+                        batchRepository.findSellableQuantity(
+                                inventory.getId(),
+                                today
+                        );
+
+                if (updated.compareTo(sellableQuantity) > 0) {
+                    throw error(HttpStatus.BAD_REQUEST,
+                            "Insufficient non-expired stock");
+                }
+            }
+
+            case RELEASE -> {
+
+                updated = current.subtract(request.quantity());
+
+                if (updated.signum() < 0) {
+                    throw error(HttpStatus.BAD_REQUEST,
+                            "Cannot release more than reserved quantity");
+                }
+            }
+
+            default -> throw error(
+                    HttpStatus.BAD_REQUEST,
+                    "Unsupported reservation type");
         }
 
         if (updated.compareTo(inventory.getQuantityOnHand()) > 0) {
             throw error(HttpStatus.BAD_REQUEST,
-                    "Insufficient available stock");
+                    "Reserved quantity exceeds physical stock");
         }
 
         validatePrecision(updated);
@@ -204,14 +229,16 @@ public class InventoryService {
     }
 
     private StoreInventory getLocked(Long id) {
+
         return inventoryRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> error(
-                        HttpStatus.NOT_FOUND, "Inventory not found"));
+                        HttpStatus.NOT_FOUND,
+                        "Inventory not found"));
     }
 
     private void validateActive(StoreInventory inventory) {
 
-        if (!inventory.getActive()) {
+        if (!Boolean.TRUE.equals(inventory.getActive())) {
             throw error(HttpStatus.BAD_REQUEST,
                     "Inventory record is inactive");
         }
@@ -219,16 +246,21 @@ public class InventoryService {
         validateStoreAndProduct(inventory);
     }
 
-    private void validateStoreAndProduct(StoreInventory inventory) {
+    private void validateStoreAndProduct(
+            StoreInventory inventory
+    ) {
 
-        Store store = storeRepository.findById(inventory.getStoreId())
+        Store store = storeRepository.findById(
+                        inventory.getStoreId())
                 .orElseThrow(() -> error(
-                        HttpStatus.NOT_FOUND, "Store not found"));
+                        HttpStatus.NOT_FOUND,
+                        "Store not found"));
 
-        Product product = productRepository
-                .findById(inventory.getProductId())
+        Product product = productRepository.findById(
+                        inventory.getProductId())
                 .orElseThrow(() -> error(
-                        HttpStatus.NOT_FOUND, "Product not found"));
+                        HttpStatus.NOT_FOUND,
+                        "Product not found"));
 
         if (!store.isActive() || !product.isActive()) {
             throw error(HttpStatus.BAD_REQUEST,
@@ -237,6 +269,7 @@ public class InventoryService {
     }
 
     private void validatePrecision(BigDecimal value) {
+
         if (value.precision() - value.scale() > 9
                 || value.scale() > 3) {
             throw error(HttpStatus.BAD_REQUEST,
@@ -245,7 +278,9 @@ public class InventoryService {
     }
 
     private ResponseStatusException error(
-            HttpStatus status, String message) {
+            HttpStatus status,
+            String message
+    ) {
         return new ResponseStatusException(status, message);
     }
 }
