@@ -1,0 +1,99 @@
+
+@baseUrl = http://localhost:8080/api/v1
+@storeId = 1
+@inventoryId = 1
+@supplierId = 1
+@orderId = 2
+
+### 01 - Evaluate individual inventory
+GET {{baseUrl}}/replenishment/inventory/{{inventoryId}}
+
+### 02 - Get store replenishment recommendations
+GET {{baseUrl}}/replenishment/store/{{storeId}}
+
+### 03 - Reject unnecessary purchase order
+POST {{baseUrl}}/replenishment/purchase-orders
+Content-Type: application/json
+
+{
+  "supplierId": {{supplierId}},
+  "inventoryId": {{inventoryId}},
+  "unitCost": 1.25
+}
+
+### 04 - Set temporary reorder level
+PUT {{baseUrl}}/inventory/{{inventoryId}}
+Content-Type: application/json
+
+{
+  "reorderLevel": 400,
+  "reorderQuantity": 100
+}
+
+### 05 - Evaluate low-stock inventory
+GET {{baseUrl}}/replenishment/inventory/{{inventoryId}}
+
+### 06 - Get store recommendations
+GET {{baseUrl}}/replenishment/store/{{storeId}}
+
+### 07 - Generate draft purchase order
+POST {{baseUrl}}/replenishment/purchase-orders
+Content-Type: application/json
+
+{
+  "supplierId": {{supplierId}},
+  "inventoryId": {{inventoryId}},
+  "unitCost": 1.25,
+  "expectedDeliveryDate": "2026-11-28",
+  "notes": "Smart replenishment test"
+}
+
+### 08 - Reject duplicate draft order
+POST {{baseUrl}}/replenishment/purchase-orders
+Content-Type: application/json
+
+{
+  "supplierId": {{supplierId}},
+  "inventoryId": {{inventoryId}},
+  "unitCost": 1.25
+}
+
+### 09 - Verify draft stock is not counted as incoming
+GET {{baseUrl}}/replenishment/inventory/{{inventoryId}}
+
+### 10 - Place generated purchase order
+PATCH {{baseUrl}}/purchase-orders/{{orderId}}/order
+
+### 11 - Verify incoming stock calculation
+GET {{baseUrl}}/replenishment/inventory/{{inventoryId}}
+
+### 12 - Verify recommendations after placing order
+GET {{baseUrl}}/replenishment/store/{{storeId}}
+
+### 13 - Reject unnecessary additional order
+POST {{baseUrl}}/replenishment/purchase-orders
+Content-Type: application/json
+
+{
+  "supplierId": {{supplierId}},
+  "inventoryId": {{inventoryId}},
+  "unitCost": 1.25
+}
+
+### 14 - Cancel generated purchase order
+PATCH {{baseUrl}}/purchase-orders/{{orderId}}/cancel
+
+### 15 - Verify recommendation returns
+GET {{baseUrl}}/replenishment/inventory/{{inventoryId}}
+
+### 16 - Restore original reorder settings
+PUT {{baseUrl}}/inventory/{{inventoryId}}
+Content-Type: application/json
+
+{
+  "reorderLevel": 30,
+  "reorderQuantity": 100
+}
+
+### 17 - Verify restored inventory recommendation
+GET {{baseUrl}}/replenishment/inventory/{{inventoryId}}
