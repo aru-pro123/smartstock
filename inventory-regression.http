@@ -1,0 +1,41 @@
+
+@baseUrl = http://localhost:8080/api/v1
+@storeId = 1
+@inventoryId = 1
+
+### 01 - Get inventory details
+GET {{baseUrl}}/inventory/{{inventoryId}}
+
+
+### 02 - Get existing inventory batches
+GET {{baseUrl}}/batches/inventory/{{inventoryId}}
+
+
+### 03 - Get expired batches
+GET {{baseUrl}}/batches/store/{{storeId}}/expired
+
+
+### 04 - Get store inventory
+GET {{baseUrl}}/inventory/store/{{storeId}}
+
+
+### 05 - Get low-stock inventory
+GET {{baseUrl}}/inventory/store/{{storeId}}/low-stock
+
+### 06 - Set temporary reorder level
+PUT {{baseUrl}}/inventory/{{inventoryId}}
+Content-Type: application/json
+
+{
+  "reorderLevel": 200,
+  "reorderQuantity": 100
+}
+
+### 07 - Restore original reorder settings
+PUT {{baseUrl}}/inventory/{{inventoryId}}
+Content-Type: application/json
+
+{
+  "reorderLevel": 30,
+  "reorderQuantity": 100
+}

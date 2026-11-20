@@ -78,14 +78,14 @@ public class InventoryService {
         inventory.setReorderQuantity(request.reorderQuantity());
         inventory.setActive(true);
 
-        return InventoryResponse.from(
+        return toResponse(
                 inventoryRepository.saveAndFlush(inventory));
     }
 
     @Transactional(readOnly = true)
     public InventoryResponse findById(Long id) {
 
-        return InventoryResponse.from(
+        return toResponse(
                 inventoryRepository.findById(id)
                         .orElseThrow(() -> error(
                                 HttpStatus.NOT_FOUND,
@@ -100,9 +100,12 @@ public class InventoryService {
                     "Store not found");
         }
 
+        LocalDate today = LocalDate.now(
+                ZoneId.of("America/Vancouver"));
+
         return inventoryRepository.findByStoreId(storeId)
                 .stream()
-                .map(InventoryResponse::from)
+                .map(inventory -> toResponse(inventory, today))
                 .toList();
     }
 
@@ -114,9 +117,12 @@ public class InventoryService {
                     "Store not found");
         }
 
-        return inventoryRepository.findLowStock(storeId)
+        LocalDate today = LocalDate.now(
+                ZoneId.of("America/Vancouver"));
+
+        return inventoryRepository.findLowStock(storeId, today)
                 .stream()
-                .map(InventoryResponse::from)
+                .map(inventory -> toResponse(inventory, today))
                 .toList();
     }
 
@@ -131,7 +137,7 @@ public class InventoryService {
         inventory.setReorderLevel(request.reorderLevel());
         inventory.setReorderQuantity(request.reorderQuantity());
 
-        return InventoryResponse.from(
+        return toResponse(
                 inventoryRepository.saveAndFlush(inventory));
     }
 
@@ -149,7 +155,7 @@ public class InventoryService {
 
         inventory.setActive(request.active());
 
-        return InventoryResponse.from(
+        return toResponse(
                 inventoryRepository.saveAndFlush(inventory));
     }
 
@@ -224,8 +230,35 @@ public class InventoryService {
 
         inventory.setQuantityReserved(updated);
 
-        return InventoryResponse.from(
+        return toResponse(
                 inventoryRepository.saveAndFlush(inventory));
+    }
+
+    private InventoryResponse toResponse(
+            StoreInventory inventory
+    ) {
+
+        LocalDate today = LocalDate.now(
+                ZoneId.of("America/Vancouver"));
+
+        return toResponse(inventory, today);
+    }
+
+    private InventoryResponse toResponse(
+            StoreInventory inventory,
+            LocalDate today
+    ) {
+
+        BigDecimal sellableQuantity =
+                batchRepository.findSellableQuantity(
+                        inventory.getId(),
+                        today
+                );
+
+        return InventoryResponse.from(
+                inventory,
+                sellableQuantity
+        );
     }
 
     private StoreInventory getLocked(Long id) {

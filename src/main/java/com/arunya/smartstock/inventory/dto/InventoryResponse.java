@@ -1,6 +1,5 @@
 package com.arunya.smartstock.inventory.dto;
 
-
 import com.arunya.smartstock.inventory.entity.StoreInventory;
 
 import java.math.BigDecimal;
@@ -20,11 +19,15 @@ public record InventoryResponse(
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {
-    public static InventoryResponse from(StoreInventory i) {
 
-        BigDecimal available =
-                i.getQuantityOnHand()
-                        .subtract(i.getQuantityReserved());
+    public static InventoryResponse from(
+            StoreInventory i,
+            BigDecimal sellableQuantity
+    ) {
+
+        BigDecimal available = sellableQuantity
+                .subtract(i.getQuantityReserved())
+                .max(BigDecimal.ZERO);
 
         return new InventoryResponse(
                 i.getId(),
@@ -36,7 +39,8 @@ public record InventoryResponse(
                 i.getReorderLevel(),
                 i.getReorderQuantity(),
                 i.getActive()
-                        && available.compareTo(i.getReorderLevel()) <= 0,
+                        && available.compareTo(
+                        i.getReorderLevel()) <= 0,
                 i.getActive(),
                 i.getCreatedAt(),
                 i.getUpdatedAt()
