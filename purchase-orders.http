@@ -1,0 +1,132 @@
+
+@baseUrl = http://localhost:8080/api/v1
+@storeId = 1
+@supplierId = 1
+@productId = 2
+@orderId = 1
+@inventoryId = 1
+
+### 01 - Get suppliers
+GET {{baseUrl}}/suppliers
+
+### 02 - Check current inventory
+GET {{baseUrl}}/inventory/{{inventoryId}}
+
+### 03 - Create purchase order
+POST {{baseUrl}}/purchase-orders
+Content-Type: application/json
+
+{
+  "supplierId": {{supplierId}},
+  "storeId": {{storeId}},
+  "expectedDeliveryDate": "2026-11-25",
+  "notes": "Weekly apple replenishment",
+  "items": [
+    {
+      "productId": {{productId}},
+      "quantity": 100,
+      "unitCost": 1.25
+    }
+  ]
+}
+
+### 04 - Get purchase order
+GET {{baseUrl}}/purchase-orders/{{orderId}}
+
+### 05 - Get all purchase orders
+GET {{baseUrl}}/purchase-orders
+
+### 06 - Get purchase orders by store
+GET {{baseUrl}}/purchase-orders/store/{{storeId}}
+
+### 07 - Get purchase orders by supplier
+GET {{baseUrl}}/purchase-orders/supplier/{{supplierId}}
+
+### 08 - Place purchase order
+PATCH {{baseUrl}}/purchase-orders/{{orderId}}/order
+
+### 09 - Receive partial delivery
+POST {{baseUrl}}/purchase-orders/{{orderId}}/receive
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productId": {{productId}},
+      "quantity": 60,
+      "batchNumber": "PO-APPLE-001",
+      "manufacturedDate": "2026-11-19",
+      "expiryDate": "2026-12-10"
+    }
+  ]
+}
+
+### 10 - Verify partially received order
+GET {{baseUrl}}/purchase-orders/{{orderId}}
+
+### 11 - Verify inventory after partial delivery
+GET {{baseUrl}}/inventory/{{inventoryId}}
+
+### 12 - Verify inventory batches
+GET {{baseUrl}}/batches/inventory/{{inventoryId}}
+
+### 13 - Reject excessive delivery
+POST {{baseUrl}}/purchase-orders/{{orderId}}/receive
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productId": {{productId}},
+      "quantity": 50,
+      "batchNumber": "PO-APPLE-002",
+      "expiryDate": "2026-12-15"
+    }
+  ]
+}
+
+### 14 - Receive remaining quantity
+POST {{baseUrl}}/purchase-orders/{{orderId}}/receive
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productId": {{productId}},
+      "quantity": 40,
+      "batchNumber": "PO-APPLE-003",
+      "manufacturedDate": "2026-11-19",
+      "expiryDate": "2026-12-15"
+    }
+  ]
+}
+
+### 15 - Verify completed purchase order
+GET {{baseUrl}}/purchase-orders/{{orderId}}
+
+### 16 - Verify final inventory
+GET {{baseUrl}}/inventory/{{inventoryId}}
+
+### 17 - Verify final inventory batches
+GET {{baseUrl}}/batches/inventory/{{inventoryId}}
+
+### 18 - Verify stock movement history
+GET {{baseUrl}}/stock-movements/inventory/{{inventoryId}}
+
+### 19 - Reject cancellation of received order
+PATCH {{baseUrl}}/purchase-orders/{{orderId}}/cancel
+
+### 20 - Reject additional delivery
+POST {{baseUrl}}/purchase-orders/{{orderId}}/receive
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productId": {{productId}},
+      "quantity": 10,
+      "batchNumber": "PO-APPLE-004",
+      "expiryDate": "2026-12-20"
+    }
+  ]
+}

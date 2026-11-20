@@ -44,4 +44,9 @@ public interface InventoryRepository
     @Query("SELECT i FROM StoreInventory i WHERE i.id = :id")
     Optional<StoreInventory> findByIdForUpdate(
             @Param("id") Long id);
+
+    Optional<StoreInventory> findByStoreIdAndProductId(
+            Long storeId,
+            Long productId
+    );
 }
