@@ -1,0 +1,27 @@
+
+@baseUrl = http://localhost:8080/api/v1
+@storeId = 1
+
+### 01 - Inventory summary
+GET {{baseUrl}}/reports/stores/{{storeId}}/inventory
+
+### 02 - Expiry summary
+GET {{baseUrl}}/reports/stores/{{storeId}}/expiry
+
+### 03 - Stock movement summary
+GET {{baseUrl}}/reports/stores/{{storeId}}/stock-movements?from=2026-11-01&to=2026-11-30
+
+### 04 - Waste summary
+GET {{baseUrl}}/reports/stores/{{storeId}}/waste?from=2026-11-01&to=2026-11-30
+
+### 05 - Purchase order summary
+GET {{baseUrl}}/reports/stores/{{storeId}}/purchase-orders
+
+### 06 - Dashboard summary
+GET {{baseUrl}}/reports/stores/{{storeId}}/dashboard
+
+### 07 - Reject invalid date range
+GET {{baseUrl}}/reports/stores/{{storeId}}/waste?from=2026-11-30&to=2026-11-01
+
+### 08 - Reject nonexistent store
+GET {{baseUrl}}/reports/stores/999999/inventory

@@ -3,6 +3,7 @@ package com.arunya.smartstock.waste.repository;
 
 import com.arunya.smartstock.waste.dto.WasteReasonSummary;
 import com.arunya.smartstock.waste.entity.WasteRecord;
+import java.time.OffsetDateTime;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -48,5 +49,25 @@ public interface WasteRepository
     List<WasteReasonSummary> summarizeByStoreId(
             @Param("storeId") Long storeId
     );
+
+
+    @Query("""
+    SELECT w.wasteReason,
+           COUNT(w),
+           SUM(w.quantity),
+           SUM(w.totalLoss)
+    FROM WasteRecord w, StoreInventory i
+    WHERE w.inventoryId = i.id
+      AND i.storeId = :storeId
+      AND w.createdAt >= :from
+      AND w.createdAt < :toExclusive
+    GROUP BY w.wasteReason
+    """)
+    List<Object[]> summarizeWasteInPeriod(
+            @Param("storeId") Long storeId,
+            @Param("from") OffsetDateTime from,
+            @Param("toExclusive") OffsetDateTime toExclusive
+    );
+
 }
 

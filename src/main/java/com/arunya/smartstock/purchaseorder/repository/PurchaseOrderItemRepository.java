@@ -59,4 +59,27 @@ public interface PurchaseOrderItemRepository
             @Param("productId") Long productId,
             @Param("status") PurchaseOrderStatus status
     );
+
+
+    @Query("""
+    SELECT COALESCE(
+        SUM(i.quantityOrdered - i.quantityReceived), 0
+    ),
+    COALESCE(
+        SUM(
+            (i.quantityOrdered - i.quantityReceived)
+            * i.unitCost
+        ), 0
+    )
+    FROM PurchaseOrderItem i, PurchaseOrder po
+    WHERE i.purchaseOrderId = po.id
+      AND po.storeId = :storeId
+      AND po.status IN :statuses
+    """)
+    Object[] summarizeOutstandingOrders(
+            @Param("storeId") Long storeId,
+            @Param("statuses")
+            List<PurchaseOrderStatus> statuses
+    );
+
 }
